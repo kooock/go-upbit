@@ -5,18 +5,37 @@ import (
 	"log"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
+	"encoding/json"
 )
 
 
 type UpbitClient struct {
-	AccessKey string
-	SecretKey string
+	AccessKey string `json:"access_key"`
+	SecretKey string `json:"secret_key"`
 }
 
 
 
-func NewUpbitClient(accessKey string, secretKey string) *UpbitClient{
-	return &UpbitClient{AccessKey:accessKey,SecretKey:secretKey}
+func NewUpbitClient() (*UpbitClient, error){
+
+	goPath := os.Getenv("GOPATH")
+
+	configPath := path.Join(goPath,"src/github.com/kooock/upbit-go/client.json")
+	println(configPath)
+	config,err := os.Open(configPath)
+	defer config.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	byteValue, _ := ioutil.ReadAll(config)
+	upbitClient := &UpbitClient{}
+	json.Unmarshal(byteValue, upbitClient)
+	println(upbitClient.AccessKey)
+	println(upbitClient.SecretKey)
+	return upbitClient, nil
 }
 
 func CreateRequest(method string,url string, queries map[string]string, tokenString string) (*http.Request,error){
@@ -27,7 +46,6 @@ func CreateRequest(method string,url string, queries map[string]string, tokenStr
 	}
 	authKey := fmt.Sprintf("Bearer %v",tokenString)
 
-	println(authKey)
 	if queries != nil{
 		q := req.URL.Query()
 		for key,value := range queries {
@@ -60,3 +78,4 @@ func (upbitClient *UpbitClient)SendRequest(method string, url string, queries ma
 	bytes, _ := ioutil.ReadAll(resp.Body)
 	return bytes,nil
 }
+
