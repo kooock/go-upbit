@@ -10,7 +10,7 @@ func (upbitClient *UpbitClient)CheckAccounts() ([]Account,error){
 	method := "GET"
 	url := "https://api.upbit.com/v1/accounts"
 
-	responseObject := make([]Account,10)
+	responseObject := make([]Account,0)
 	responseJson, err := upbitClient.SendRequest(method,url,nil)
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func (upbitClient *UpbitClient)CheckOrderList(market string,state string, page i
 		queries["order_by"] = orderBy
 	}
 
-	responseObject := make([]Order,10)
+	responseObject := make([]Order,0)
 	responseJson,err := upbitClient.SendRequest(method,url,queries)
 	if err != nil {
 		return nil, err

@@ -8,17 +8,19 @@ import (
 	"os"
 	"path"
 	"encoding/json"
+	"github.com/kooock/upbit-go/websocket"
 )
 
 
 type UpbitClient struct {
 	AccessKey string `json:"access_key"`
 	SecretKey string `json:"secret_key"`
+	WebSocketClient *websocket.WebSocketClient
 }
 
 
 
-func NewUpbitClient() (*UpbitClient, error){
+func CreateUpbitClient() (*UpbitClient, error){
 
 	goPath := os.Getenv("GOPATH")
 
@@ -27,14 +29,13 @@ func NewUpbitClient() (*UpbitClient, error){
 	config,err := os.Open(configPath)
 	defer config.Close()
 	if err != nil {
+		print(err)
 		return nil, err
 	}
 
 	byteValue, _ := ioutil.ReadAll(config)
 	upbitClient := &UpbitClient{}
 	json.Unmarshal(byteValue, upbitClient)
-	println(upbitClient.AccessKey)
-	println(upbitClient.SecretKey)
 	return upbitClient, nil
 }
 
@@ -57,7 +58,9 @@ func CreateRequest(method string,url string, queries map[string]string, tokenStr
 	return req, err
 }
 
-
+func (upbitClient *UpbitClient)SetWebSocketClient(websocketClient *websocket.WebSocketClient){
+	upbitClient.WebSocketClient = websocketClient
+}
 
 func (upbitClient *UpbitClient)SendRequest(method string, url string, queries map[string]string) ([]byte,error){
 	jwtToken := NewJWTtoken(queries, upbitClient.AccessKey)
